@@ -1,25 +1,21 @@
 ﻿using Repository.Interfaces;
 using Repository.Modelos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Services
 {
-    public class PersonaService
+    public class ClienteService
     {
-        private readonly IPersonaRepository _personaRepository;
-        public PersonaService(IPersonaRepository personaRepository)
+        private readonly IClienteRepository _clienteRepository;
+        public ClienteService(IClienteRepository clienteRepository)
         {
-            _personaRepository = personaRepository;
+            _clienteRepository = clienteRepository;
         }
-        public bool add(PersonaDTO persona)
+        public bool add(ClienteDTO cliente)
         {
             try
             {
-                if (_personaRepository.Add(persona))
+                if (_clienteRepository.Add(cliente))
                     return true;
                 else
                     return false;
@@ -29,11 +25,11 @@ namespace Services
                 throw ex;
             }
         }
-        public bool update(PersonaDTO persona)
+        public bool update(ClienteDTO cliente)
         {
             try
             {
-                if (_personaRepository.Update(persona))
+                if (_clienteRepository.Update(cliente))
                     return true;
                 else
                     return false;
@@ -43,11 +39,11 @@ namespace Services
                 throw ex;
             }
         }
-        public bool remove(string cedula)
+        public bool remove(int id)
         {
             try
             {
-                if (_personaRepository.Remove(cedula))
+                if (_clienteRepository.Remove(id))
                     return true;
                 else
                     return false;
@@ -57,28 +53,27 @@ namespace Services
                 throw ex;
             }
         }
-        public PersonaDTO get(string id)
+        public ClienteDTO get(int id)
         {
             try
             {
-                return _personaRepository.Get(id);
+                return _clienteRepository.Get(id);
             }
             catch (Exception ex)
             {
                 throw ex;
             }
         }
-        public IEnumerable<PersonaDTO> list()
+        public IEnumerable<ClienteDTO> list()
         {
             try
             {
-                return _personaRepository.List();
+                return _clienteRepository.List();
             }
             catch (Exception ex)
             {
                 throw ex;
             }
         }
-
     }
 }

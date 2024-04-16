@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Repository;
 using Repository.Implementations;
 using Repository.Modelos;
 using Services;
@@ -8,28 +7,27 @@ namespace api.optativov.persona.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class PersonaController : Controller
+    public class FacturaController : Controller
     {
         private IConfiguration configuration;
-        private PersonaService personaService;
+        private FacturaService facturaService;
 
-        /*public CuentaController()*/
-        public PersonaController(IConfiguration configuration)
+        public FacturaController(IConfiguration configuration)
         {
             this.configuration = configuration;
-            this.personaService = new PersonaService(new PersonaRepository(configuration.GetConnectionString("postgresDB")));
+            facturaService = new FacturaService(new FacturaRepository(configuration.GetConnectionString("postgresDB")));
         }
         // Generate crud controller
         [HttpPost]
         [Route("add")]
-        public IActionResult add(PersonaDTO persona)
+        public IActionResult add(FacturaDTO factura)
         {
             try
             {
-                if (personaService.add(persona))
-                    return Ok("Persona agregada correctamente");
+                if (facturaService.add(factura))
+                    return Ok("Factura agregada correctamente");
                 else
-                    return BadRequest("Error al agregar persona");
+                    return BadRequest("Error al agregar Factura");
             }
             catch (Exception ex)
             {
@@ -37,15 +35,15 @@ namespace api.optativov.persona.Controllers
             }
         }
         [HttpPut]
-        [Route("update/{id}")]
-        public IActionResult update(PersonaDTO persona)
+        [Route("update")]
+        public IActionResult update(FacturaDTO factura)
         {
             try
             {
-                if (personaService.update(persona))
-                    return Ok("Persona actualizada correctamente");
+                if (facturaService.update(factura))
+                    return Ok("Factura actualizada correctamente");
                 else
-                    return BadRequest("Error al actualizar persona");
+                    return BadRequest("Error al actualizar Factura");
             }
             catch (Exception ex)
             {
@@ -54,11 +52,11 @@ namespace api.optativov.persona.Controllers
         }
         [HttpDelete]
         [Route("remove")]
-        public IActionResult remove(string cedula)
+        public IActionResult remove(int id)
         {
             try
             {
-                if (personaService.remove(cedula))
+                if (facturaService.remove(id))
                     return Ok("Persona eliminada correctamente");
                 else
                     return BadRequest("Error al eliminar persona");
@@ -70,15 +68,15 @@ namespace api.optativov.persona.Controllers
         }
         [HttpGet]
         [Route("get/{id}")]
-        public IActionResult get(string id)
+        public IActionResult get(int id)
         {
             try
             {
-                var persona = personaService.get(id);
-                if (persona != null)
-                    return Ok(persona);
+                var cliente = facturaService.get(id);
+                if (cliente != null)
+                    return Ok(cliente);
                 else
-                    return BadRequest("Persona no encontrada");
+                    return BadRequest("Factura no encontrada");
             }
             catch (Exception ex)
             {
@@ -91,17 +89,16 @@ namespace api.optativov.persona.Controllers
         {
             try
             {
-                var personas = personaService.list();
-                if (personas != null)
-                    return Ok(personas);
+                var facturas = facturaService.list();
+                if (facturas != null)
+                    return Ok(facturas);
                 else
-                    return BadRequest("No hay personas registradas");
+                    return BadRequest("No hay Factura registradas");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
-
     }
 }

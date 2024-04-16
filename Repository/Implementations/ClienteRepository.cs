@@ -1,26 +1,23 @@
 ﻿using Dapper;
 using Repository.Database;
-using System;
-using System.Collections.Generic;
+using Repository.Interfaces;
+using Repository.Modelos;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Repository
+namespace Repository.Implementations
 {
-    public class PersonaRepository : IPersonaRepository
+    public class ClienteRepository : IClienteRepository
     {
         private IDbConnection conexionDB;
-        public PersonaRepository(string _connectionString)
+        public ClienteRepository(string _connectionString)
         {
             conexionDB = new DbConnection(_connectionString).dbConnection();
         }
-        public bool Add(PersonaDTO persona)
+        public bool Add(ClienteDTO cliente)
         {
             try
             {
-                if (conexionDB.Execute("Insert into Persona(nombre, apellido, cedula) values(@nombre, @apellido, @cedula)", persona) > 0)
+                if (conexionDB.Execute("INSERT INTO cliente (Id_banco, Nombre, Apellido, Documento, Direccion, mail, Celular, Estado) VALUES (@IdBanco, @Nombre, @Apellido, @Documento, @Direccion, @Email, @Celular, @Estado)", cliente) > 0)
                     return true;
                 else
                     return false;
@@ -32,11 +29,11 @@ namespace Repository
             }
         }
 
-        public PersonaDTO Get(string cedula)
+        public ClienteDTO Get(int id)
         {
             try
             {
-                return conexionDB.Query<PersonaDTO>("Select * from Persona where cedula = @cedula", new { cedula }).FirstOrDefault();
+                return conexionDB.Query<ClienteDTO>("Select * from Cliente where id = @id", new { id }).FirstOrDefault();
             }
             catch (Exception ex)
             {
@@ -45,12 +42,12 @@ namespace Repository
             }
         }
 
-        public IEnumerable<PersonaDTO> List()
+        public IEnumerable<ClienteDTO> List()
         {
 
             try
             {
-                return conexionDB.Query<PersonaDTO>("Select * from Persona");
+                return conexionDB.Query<ClienteDTO>("Select * from Cliente where Estado != 'inactivo'");
             }
             catch (Exception ex)
             {
@@ -59,12 +56,12 @@ namespace Repository
             }
         }
 
-        public bool Remove(string cedula)
+        public bool Remove(int id)
         {
 
             try
             {
-                if (conexionDB.Execute("Delete from Persona where cedula = @cedula", new { cedula } ) > 0)
+                if (conexionDB.Execute("UPDATE Cliente SET Estado = 'inactivo' WHERE Id = @Id", new { id }) > 0)
                     return true;
                 else
                     return false;
@@ -76,12 +73,12 @@ namespace Repository
             }
         }
 
-        public bool Update(PersonaDTO persona)
+        public bool Update(ClienteDTO cliente)
         {
 
             try
             {
-                if (conexionDB.Execute("Update persona set nombre = @nombre, apellido = @apellido where cedula = @cedula", persona) > 0)
+                if (conexionDB.Execute("UPDATE Cliente SET Id_banco = @IdBanco, Nombre = @Nombre, Apellido = @Apellido, Documento = @Documento, Direccion = @Direccion, Mail = @Email, Celular = @Celular, Estado = @Estado WHERE Id = @Id", cliente) > 0)
                     return true;
                 else
                     return false;
