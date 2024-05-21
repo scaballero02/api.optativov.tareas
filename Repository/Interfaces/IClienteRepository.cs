@@ -5,10 +5,10 @@ namespace Repository.Interfaces
 {
     public interface IClienteRepository
     {
-        bool Add(ClienteDTO cliente);
-        bool Remove(int id);
-        bool Update(ClienteDTO cliente);
-        ClienteDTO Get(int id);
-        IEnumerable<ClienteDTO> List();
+        Task<bool> Add(ClienteDTO cliente);
+        Task<bool> Remove(int id);
+        Task<bool> Update(ClienteDTO cliente);
+        Task<ClienteDTO> Get(int id);
+        Task<IEnumerable<ClienteDTO>> List();
     }
 }

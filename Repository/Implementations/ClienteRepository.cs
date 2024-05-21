@@ -1,91 +1,87 @@
-﻿using Dapper;
-using Repository.Database;
+﻿using Repository.Database;
 using Repository.Interfaces;
 using Repository.Modelos;
-using System.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Repository.Implementations
 {
     public class ClienteRepository : IClienteRepository
     {
-        private IDbConnection conexionDB;
-        public ClienteRepository(string _connectionString)
+        private readonly ApplicationDbContext _context;
+
+        public ClienteRepository(ApplicationDbContext context)
         {
-            conexionDB = new DbConnection(_connectionString).dbConnection();
+            _context = context;
         }
-        public bool Add(ClienteDTO cliente)
+
+        public async Task<bool> Add(ClienteDTO cliente)
         {
             try
             {
-                if (conexionDB.Execute("INSERT INTO cliente (Id_banco, Nombre, Apellido, Documento, Direccion, mail, Celular, Estado) VALUES (@IdBanco, @Nombre, @Apellido, @Documento, @Direccion, @Email, @Celular, @Estado)", cliente) > 0)
-                    return true;
-                else
-                    return false;
+                await _context.ClientesEF.AddAsync(cliente);
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
         }
 
-        public ClienteDTO Get(int id)
+        public async Task<ClienteDTO> Get(int id)
         {
             try
             {
-                return conexionDB.Query<ClienteDTO>("Select * from Cliente where id = @id", new { id }).FirstOrDefault();
+                return await _context.ClientesEF.FirstOrDefaultAsync(c => c.Id == id);
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
         }
 
-        public IEnumerable<ClienteDTO> List()
+        public async Task<IEnumerable<ClienteDTO>> List()
         {
-
             try
             {
-                return conexionDB.Query<ClienteDTO>("Select * from Cliente where Estado != 'inactivo'");
+                return await _context.ClientesEF.Where(c => c.Estado != "inactivo").ToListAsync();
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
         }
 
-        public bool Remove(int id)
+        public async Task<bool> Remove(int id)
         {
-
             try
             {
-                if (conexionDB.Execute("UPDATE Cliente SET Estado = 'inactivo' WHERE Id = @Id", new { id }) > 0)
-                    return true;
-                else
-                    return false;
+                var cliente = await _context.ClientesEF.FindAsync(id);
+                if (cliente != null)
+                {
+                    cliente.Estado = "inactivo";
+                    _context.ClientesEF.Update(cliente);
+                    return await _context.SaveChangesAsync() > 0;
+                }
+                return false;
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
         }
 
-        public bool Update(ClienteDTO cliente)
+        public async Task<bool> Update(ClienteDTO cliente)
         {
-
             try
             {
-                if (conexionDB.Execute("UPDATE Cliente SET Id_banco = @IdBanco, Nombre = @Nombre, Apellido = @Apellido, Documento = @Documento, Direccion = @Direccion, Mail = @Email, Celular = @Celular, Estado = @Estado WHERE Id = @Id", cliente) > 0)
-                    return true;
-                else
-                    return false;
+                _context.ClientesEF.Update(cliente);
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
         }

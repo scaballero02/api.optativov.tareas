@@ -1,97 +1,87 @@
-﻿using Dapper;
-using Repository.Database;
+﻿using Microsoft.EntityFrameworkCore;
 using Repository.Interfaces;
 using Repository.Modelos;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Repository.Implementations
 {
     public class FacturaRepository : IFacturaRepository
     {
-        private IDbConnection conexionDB;
-        public FacturaRepository(string _connectionString)
+        private readonly ApplicationDbContext _context;
+
+        public FacturaRepository(ApplicationDbContext context)
         {
-            conexionDB = new DbConnection(_connectionString).dbConnection();
+            _context = context;
         }
-        public bool Add(FacturaDTO factura)
+
+        public async Task<bool> Add(FacturaDTO factura)
         {
             try
             {
-                if (conexionDB.Execute("INSERT INTO Factura (Id_cliente, Nro_Factura, Fecha_Hora, Total, Total_iva5, Total_iva10, Total_iva, Total_letras, Sucursal) VALUES (@IdCliente, @NroFactura, @FechaHora, @Total, @TotalIvaCinco, @TotalIvaDiez, @TotalIva, @TotalLetras, @Sucursal)", factura) > 0)
-                    return true;
-                else
-                    return false;
+                await _context.FacturasEF.AddAsync(factura);
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw new Exception("Error al agregar la factura", ex);
             }
         }
 
-        public FacturaDTO Get(int id)
+        public async Task<FacturaDTO> Get(int id)
         {
             try
             {
-                return conexionDB.Query<FacturaDTO>("Select id, id_cliente as IdCliente, nro_factura as NroFactura, fecha_hora as FechaHora, total, total_iva5 as TotalIvaCinco, total_iva10 as TotalIvaDiez, total_iva as TotalIva, total_letras as TotalLetras, sucursal from Factura where id = @id", new { id }).FirstOrDefault();
+                return await _context.FacturasEF.FindAsync(id);
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw new Exception("Error al obtener la factura", ex);
             }
         }
 
-        public IEnumerable<FacturaDTO> List()
+        public async Task<IEnumerable<FacturaDTO>> List()
         {
-
             try
             {
-                return conexionDB.Query<FacturaDTO>("Select id, id_cliente as IdCliente, nro_factura as NroFactura, fecha_hora as FechaHora, total, total_iva5 as TotalIvaCinco, total_iva10 as TotalIvaDiez, total_iva as TotalIva, total_letras as TotalLetras, sucursal from Factura");
+                return await _context.FacturasEF.ToListAsync();
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw new Exception("Error al listar las facturas", ex);
             }
         }
 
-        public bool Remove(int id)
+        public async Task<bool> Remove(int id)
         {
-
             try
             {
-                if (conexionDB.Execute("Delete from Factura where id = @id", new { id }) > 0)
-                    return true;
-                else
-                    return false;
+                var factura = await _context.FacturasEF.FindAsync(id);
+                if (factura != null)
+                {
+                    _context.FacturasEF.Remove(factura);
+                    return await _context.SaveChangesAsync() > 0;
+                }
+                return false;
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw new Exception("Error al eliminar la factura", ex);
             }
         }
 
-        public bool Update(FacturaDTO factura)
+        public async Task<bool> Update(FacturaDTO factura)
         {
-
             try
             {
-                if (conexionDB.Execute("UPDATE Factura SET Id_cliente = @IdCliente, Nro_Factura = @NroFactura, Fecha_Hora = @FechaHora, Total = @Total, Total_iva5 = @TotalIvaCinco, Total_iva10 = @TotalIvaDiez, Total_iva = @TotalIva, Total_Letras = @TotalLetras, Sucursal = @Sucursal WHERE Id = @Id", factura) > 0)
-                    return true;
-                else
-                    return false;
+                _context.FacturasEF.Update(factura);
+                return await _context.SaveChangesAsync() > 0;
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw new Exception("Error al actualizar la factura", ex);
             }
         }
     }

@@ -1,30 +1,29 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Repository.Implementations;
+using Repository.Interfaces;
 using Repository.Modelos;
 using Services;
+using System.Threading.Tasks;
 
 namespace api.optativov.persona.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class FacturaController : Controller
+    public class FacturaController : ControllerBase
     {
-        private IConfiguration configuration;
-        private FacturaService facturaService;
+        private readonly FacturaService _facturaService;
 
-        public FacturaController(IConfiguration configuration)
+        public FacturaController(FacturaService facturaService)
         {
-            this.configuration = configuration;
-            facturaService = new FacturaService(new FacturaRepository(configuration.GetConnectionString("postgresDB")));
+            _facturaService = facturaService;
         }
-        // Generate crud controller
+
         [HttpPost]
         [Route("add")]
-        public IActionResult add(FacturaDTO factura)
+        public async Task<IActionResult> Add(FacturaDTO factura)
         {
             try
             {
-                if (facturaService.add(factura))
+                if (await _facturaService.Add(factura))
                     return Ok("Factura agregada correctamente");
                 else
                     return BadRequest("Error al agregar Factura");
@@ -34,13 +33,14 @@ namespace api.optativov.persona.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpPut]
         [Route("update")]
-        public IActionResult update(FacturaDTO factura)
+        public async Task<IActionResult> Update(FacturaDTO factura)
         {
             try
             {
-                if (facturaService.update(factura))
+                if (await _facturaService.Update(factura))
                     return Ok("Factura actualizada correctamente");
                 else
                     return BadRequest("Error al actualizar Factura");
@@ -50,50 +50,53 @@ namespace api.optativov.persona.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpDelete]
-        [Route("remove")]
-        public IActionResult remove(int id)
+        [Route("remove/{id}")]
+        public async Task<IActionResult> Remove(int id)
         {
             try
             {
-                if (facturaService.remove(id))
-                    return Ok("Persona eliminada correctamente");
+                if (await _facturaService.Remove(id))
+                    return Ok("Factura eliminada correctamente");
                 else
-                    return BadRequest("Error al eliminar persona");
+                    return BadRequest("Error al eliminar Factura");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet]
         [Route("get/{id}")]
-        public IActionResult get(int id)
+        public async Task<IActionResult> Get(int id)
         {
             try
             {
-                var cliente = facturaService.get(id);
-                if (cliente != null)
-                    return Ok(cliente);
+                var factura = await _facturaService.Get(id);
+                if (factura != null)
+                    return Ok(factura);
                 else
-                    return BadRequest("Factura no encontrada");
+                    return NotFound("Factura no encontrada");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet]
         [Route("list")]
-        public IActionResult list()
+        public async Task<IActionResult> List()
         {
             try
             {
-                var facturas = facturaService.list();
+                var facturas = await _facturaService.List();
                 if (facturas != null)
                     return Ok(facturas);
                 else
-                    return BadRequest("No hay Factura registradas");
+                    return NoContent();
             }
             catch (Exception ex)
             {

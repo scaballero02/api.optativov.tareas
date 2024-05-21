@@ -1,101 +1,104 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Repository;
-using Repository.Implementations;
 using Repository.Modelos;
 using Services;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace api.optativov.persona.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ClienteController : Controller
+    public class ClienteController : ControllerBase
     {
-        private IConfiguration configuration;
-        private ClienteService clienteService;
+        private readonly IConfiguration _configuration;
+        private readonly ClienteService _clienteService;
 
-        /*public CuentaController()*/
-        public ClienteController(IConfiguration configuration)
+        public ClienteController(IConfiguration configuration, ClienteService clienteService)
         {
-            this.configuration = configuration;
-            this.clienteService = new ClienteService(new ClienteRepository(configuration.GetConnectionString("postgresDB")));
+            _configuration = configuration;
+            _clienteService = clienteService;
         }
-        // Generate crud controller
+
         [HttpPost]
         [Route("add")]
-        public IActionResult add(ClienteDTO cliente)
+        public async Task<IActionResult> Add(ClienteDTO cliente)
         {
             try
             {
-                if (clienteService.add(cliente))
-                    return Ok("Persona agregada correctamente");
+                if (await _clienteService.Add(cliente))
+                    return Ok("Cliente agregado correctamente");
                 else
-                    return BadRequest("Error al agregar persona");
+                    return BadRequest("Error al agregar cliente");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpPut]
         [Route("update")]
-        public IActionResult update(ClienteDTO cliente)
+        public async Task<IActionResult> Update(ClienteDTO cliente)
         {
             try
             {
-                if (clienteService.update(cliente))
-                    return Ok("Persona actualizada correctamente");
+                if (await _clienteService.Update(cliente))
+                    return Ok("Cliente actualizado correctamente");
                 else
-                    return BadRequest("Error al actualizar persona");
+                    return BadRequest("Error al actualizar cliente");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpDelete]
-        [Route("remove")]
-        public IActionResult remove(int id)
+        [Route("remove/{id}")]
+        public async Task<IActionResult> Remove(int id)
         {
             try
             {
-                if (clienteService.remove(id))
-                    return Ok("Persona eliminada correctamente");
+                if (await _clienteService.Remove(id))
+                    return Ok("Cliente eliminado correctamente");
                 else
-                    return BadRequest("Error al eliminar persona");
+                    return BadRequest("Error al eliminar cliente");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet]
         [Route("get/{id}")]
-        public IActionResult get(int id)
+        public async Task<IActionResult> Get(int id)
         {
             try
             {
-                var cliente = clienteService.get(id);
+                var cliente = await _clienteService.Get(id);
                 if (cliente != null)
                     return Ok(cliente);
                 else
-                    return BadRequest("Persona no encontrada");
+                    return NotFound("Cliente no encontrado");
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet]
         [Route("list")]
-        public IActionResult list()
+        public async Task<IActionResult> List()
         {
             try
             {
-                var clientes = clienteService.list();
+                var clientes = await _clienteService.List();
                 if (clientes != null)
                     return Ok(clientes);
                 else
-                    return BadRequest("No hay clientes registradas");
+                    return NoContent();
             }
             catch (Exception ex)
             {
