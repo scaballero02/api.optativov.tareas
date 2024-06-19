@@ -11,6 +11,8 @@ namespace Repository.Implementations
     public class ClienteRepository : IClienteRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly string EstadoActivo = "Activo";
+        private readonly string EstadoInactivo = "Inactivo";
 
         public ClienteRepository(ApplicationDbContext context)
         {
@@ -21,12 +23,22 @@ namespace Repository.Implementations
         {
             try
             {
-                await _context.ClientesEF.AddAsync(cliente);
-                return await _context.SaveChangesAsync() > 0;
+                var existeCliente = await _context.ClientesEF.AsNoTracking()
+                                                             .Where(e => e.Documento.Equals(cliente.Documento) && e.Estado.Equals(EstadoActivo))
+                                                             .AnyAsync();
+
+                if (!existeCliente)
+                {
+                    cliente.Estado = EstadoActivo;
+                    await _context.ClientesEF.AddAsync(cliente);
+                    return await _context.SaveChangesAsync() > 0;
+                }
+                else
+                    return false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -34,11 +46,11 @@ namespace Repository.Implementations
         {
             try
             {
-                return await _context.ClientesEF.FirstOrDefaultAsync(c => c.Id == id);
+                return await _context.ClientesEF.FirstOrDefaultAsync(c => c.Id == id && c.Estado == EstadoActivo);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -46,11 +58,13 @@ namespace Repository.Implementations
         {
             try
             {
-                return await _context.ClientesEF.Where(c => c.Estado != "inactivo").ToListAsync();
+                return await _context.ClientesEF
+                    .Where(c => c.Estado.Equals(EstadoActivo))
+                    .ToListAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -59,17 +73,17 @@ namespace Repository.Implementations
             try
             {
                 var cliente = await _context.ClientesEF.FindAsync(id);
-                if (cliente != null)
+                if (cliente is not null)
                 {
-                    cliente.Estado = "inactivo";
+                    cliente.Estado = EstadoInactivo;
                     _context.ClientesEF.Update(cliente);
                     return await _context.SaveChangesAsync() > 0;
                 }
                 return false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -77,12 +91,24 @@ namespace Repository.Implementations
         {
             try
             {
-                _context.ClientesEF.Update(cliente);
-                return await _context.SaveChangesAsync() > 0;
+                var existeDocumento = await _context.ClientesEF.AsNoTracking()
+                                                    .Where(e => e.Documento.Equals(cliente.Documento) && e.Estado.Equals(EstadoActivo))
+                                                    .AnyAsync();
+
+                var existeCliente = await _context.ClientesEF.AsNoTracking()
+                                                            .Where(e => e.Id.Equals(cliente.Id) && e.Estado.Equals(EstadoActivo))
+                                                            .AnyAsync();
+                if (!existeDocumento && existeCliente)
+                {
+                    _context.ClientesEF.Update(cliente);
+                    return await _context.SaveChangesAsync() > 0;
+                }
+                else
+                    return false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
     }
