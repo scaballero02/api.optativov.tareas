@@ -21,8 +21,17 @@ namespace Repository.Implementations
         {
             try
             {
-                await _context.FacturasEF.AddAsync(factura);
-                return await _context.SaveChangesAsync() > 0;
+                var existeCliente = await _context.ClientesEF.AsNoTracking()
+                                                             .Where(e => e.Id == factura.IdCliente)
+                                                             .AnyAsync();
+                if (existeCliente)
+                {
+                    await _context.FacturasEF.AddAsync(factura);
+                    return await _context.SaveChangesAsync() > 0;
+                }
+                else
+                    return false;
+
             }
             catch (Exception ex)
             {
@@ -59,7 +68,7 @@ namespace Repository.Implementations
             try
             {
                 var factura = await _context.FacturasEF.FindAsync(id);
-                if (factura != null)
+                if (factura is not null)
                 {
                     _context.FacturasEF.Remove(factura);
                     return await _context.SaveChangesAsync() > 0;
@@ -76,13 +85,26 @@ namespace Repository.Implementations
         {
             try
             {
-                _context.FacturasEF.Update(factura);
-                return await _context.SaveChangesAsync() > 0;
+                var existeCliente = await _context.ClientesEF.AsNoTracking()
+                                                             .Where(e => e.Id == factura.IdCliente)
+                                                             .AnyAsync();
+
+                var existeFactura = await _context.FacturasEF.AsNoTracking()
+                                                             .Where(e => e.Id.Equals(factura.Id))
+                                                             .AnyAsync();
+                if (existeCliente && existeFactura)
+                {
+                    _context.FacturasEF.Update(factura);
+                    return await _context.SaveChangesAsync() > 0;
+                }
+                else
+                    return false;
             }
             catch (Exception ex)
             {
                 throw new Exception("Error al actualizar la factura", ex);
             }
         }
+
     }
 }

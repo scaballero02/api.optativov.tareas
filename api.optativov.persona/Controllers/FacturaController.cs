@@ -23,14 +23,18 @@ namespace api.optativov.persona.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
                 if (await _facturaService.Add(factura))
                     return Ok("Factura agregada correctamente");
                 else
-                    return BadRequest("Error al agregar Factura");
+                    return BadRequest("El cliente no existe");
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("Error al insertar la Factura");
             }
         }
 
@@ -40,14 +44,18 @@ namespace api.optativov.persona.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
                 if (await _facturaService.Update(factura))
                     return Ok("Factura actualizada correctamente");
                 else
-                    return BadRequest("Error al actualizar Factura");
+                    return BadRequest("El cliente o la factura no existe");
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("Error al actualizar la factura");
             }
         }
 

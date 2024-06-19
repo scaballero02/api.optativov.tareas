@@ -25,14 +25,18 @@ namespace api.optativov.persona.Controllers
         {
             try
             {
+                if(!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
                 if (await _clienteService.Add(cliente))
                     return Ok("Cliente agregado correctamente");
                 else
-                    return BadRequest("Error al agregar cliente");
+                    return BadRequest("El cliente ya existe con este numero de documento");
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("Error al agregar cliente");
             }
         }
 
@@ -42,14 +46,18 @@ namespace api.optativov.persona.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
                 if (await _clienteService.Update(cliente))
                     return Ok("Cliente actualizado correctamente");
                 else
-                    return BadRequest("Error al actualizar cliente");
+                    return BadRequest("El cliente ya existe con este numero de documento o no existe");
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("Error al agregar cliente");
             }
         }
 
